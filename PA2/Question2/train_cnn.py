@@ -22,29 +22,11 @@ class ConvNet(object):
 
     # Baseline model. step 1
     def model_1(self, X, hidden_size):
-        # From X to fully connected layer
-        #   o
-        #  / 
-        # X-o  
-        #  \  
-        #   o
-        # / - \ = _W (weight), o = hidden_size, b = bias
-        _X = tf.reshape(X,[-1, 28 * 28])
-        _W = tf.Variable(tf.truncated_normal([28 * 28, hidden_size], stddev=0.05))
-        _b = tf.Variable(tf.zeros([hidden_size]))
-        _WX = tf.sigmoid(tf.matmul(_X, _W) + _b)
-
-        # From fully connected layer to Y 
-        # o
-        #  \
-        # o-Y
-        #  / 
-        # o
-        W_ = tf.Variable(tf.truncated_normal([hidden_size, 10], stddev=0.05))
-        b_ = tf.Variable(tf.zeros([10]))
-        yHat = tf.matmul(_WX, W_) + b_
-
-        return yHat
+        X_ = tf.contrib.layers.flatten(X)
+        num_output = 10
+        fully_connected_layer = tf.layers.dense(X_, hidden_size, activation=tf.nn.sigmoid)
+        logits = tf.layers.dense(fully_connected_layer, num_output)
+        return logits
 
 
     # Use two convolutional layers.
@@ -53,11 +35,24 @@ class ConvNet(object):
         # Two convolutional layers + one fully connnected layer. and pooling layer
         #
         # ----------------- YOUR CODE HERE ----------------------
-        #
-        # Uncomment the following return stmt once method implementation is done.
-        # return  fcl
-        # Delete line return NotImplementedError() once method is implemented.
-        return NotImplementedError()
+        # first conv + pool
+        convLayer1 = tf.layers.conv2d(X, filters=20, kernel_size=5, 
+                                      padding="VALID", activation=tf.nn.sigmoid)
+        poolLayer1 = tf.layers.max_pooling2d(convLayer1, pool_size=2, 
+                                             strides=2, padding="VALID")
+
+        # second conv + pool
+        convLayer2 = tf.layers.conv2d(poolLayer1, filters=40, kernel_size=5, 
+                                      padding="VALID", activation=tf.nn.sigmoid)
+        poolLayer2 = tf.layers.max_pooling2d(convLayer2, pool_size=2, 
+                                             strides=2, padding="VALID")
+
+        # fully connected
+        poolLayer2 = tf.contrib.layers.flatten(poolLayer2)
+        num_output = 10
+        fullyConLayer = tf.layers.dense(poolLayer2, hidden_size, activation=tf.nn.sigmoid)
+        logits = tf.layers.dense(fullyConLayer, num_output)
+        return logits
 
     # Replace sigmoid with ReLU.
     def model_3(self, X, hidden_size):
@@ -65,11 +60,24 @@ class ConvNet(object):
         # Two convolutional layers + one fully connected layer, with ReLU.
         #
         # ----------------- YOUR CODE HERE ----------------------
-        #
-        # Uncomment the following return stmt once method implementation is done.
-        # return  fcl
-        # Delete line return NotImplementedError() once method is implemented.
-        return NotImplementedError()
+        # first conv + pool
+        convLayer1 = tf.layers.conv2d(X, filters=20, kernel_size=5, 
+                                      padding="VALID", activation=tf.nn.relu)
+        poolLayer1 = tf.layers.max_pooling2d(convLayer1, pool_size=2, 
+                                             strides=2, padding="VALID")
+
+        # second conv + pool
+        convLayer2 = tf.layers.conv2d(poolLayer1, filters=40, kernel_size=5, 
+                                      padding="VALID", activation=tf.nn.relu)
+        poolLayer2 = tf.layers.max_pooling2d(convLayer2, pool_size=2, 
+                                             strides=2, padding="VALID")
+
+        # fully connected
+        poolLayer2 = tf.contrib.layers.flatten(poolLayer2)
+        num_output = 10
+        fullyConLayer = tf.layers.dense(poolLayer2, hidden_size, activation=tf.nn.sigmoid)
+        logits = tf.layers.dense(fullyConLayer, num_output)
+        return logits
 
     # Add one extra fully connected layer.
     def model_4(self, X, hidden_size, decay):
@@ -77,11 +85,30 @@ class ConvNet(object):
         # Two convolutional layers + two fully connected layers, with ReLU.
         #
         # ----------------- YOUR CODE HERE ----------------------
-        #
-        # Uncomment the following return stmt once method implementation is done.
-        # return  fcl
-        # Delete line return NotImplementedError() once method is implemented.
-        return NotImplementedError()
+        # first conv + pool
+        convLayer1 = tf.layers.conv2d(X, filters=20, kernel_size=5, 
+                                      padding="VALID", activation=tf.nn.relu)
+        poolLayer1 = tf.layers.max_pooling2d(convLayer1, pool_size=2, 
+                                             strides=2, padding="VALID")
+
+        # second conv + pool
+        convLayer2 = tf.layers.conv2d(poolLayer1, filters=40, kernel_size=5, 
+                                      padding="VALID", activation=tf.nn.relu)
+        poolLayer2 = tf.layers.max_pooling2d(convLayer2, pool_size=2, 
+                                             strides=2, padding="VALID")
+
+        # fully connected
+        poolLayer2 = tf.contrib.layers.flatten(poolLayer2)
+        num_output = 10
+        fullyConLayer1 = tf.layers.dense(poolLayer2, hidden_size, activation=tf.nn.sigmoid)
+
+        # fully connected with L2 regularizer
+        l2Regularizer = tf.contrib.layers.l2_regularizer(decay)
+        fullyConLayer2 = tf.layers.dense(fullyConLayer1, hidden_size, activation=tf.nn.sigmoid,
+                                         kernel_regularizer=l2Regularizer)
+
+        logits = tf.layers.dense(fullyConLayer2, num_output)
+        return logits
 
     # Use Dropout now.
     def model_5(self, X, hidden_size, is_train):
@@ -90,12 +117,34 @@ class ConvNet(object):
         # and  + Dropout.
         #
         # ----------------- YOUR CODE HERE ----------------------
-        #
+        
+        # first conv + pool
+        convLayer1 = tf.layers.conv2d(X, filters=20, kernel_size=5, 
+                                      padding="VALID", activation=tf.nn.relu)
+        poolLayer1 = tf.layers.max_pooling2d(convLayer1, pool_size=2, 
+                                             strides=2, padding="VALID")
 
-        # Uncomment the following return stmt once method implementation is done.
-        # return  fcl
-        # Delete line return NotImplementedError() once method is implemented.
-        return NotImplementedError()
+        # second conv + pool
+        convLayer2 = tf.layers.conv2d(poolLayer1, filters=40, kernel_size=5, 
+                                      padding="VALID", activation=tf.nn.relu)
+        poolLayer2 = tf.layers.max_pooling2d(convLayer2, pool_size=2, 
+                                             strides=2, padding="VALID")
+
+        # fully connected
+        poolLayer2 = tf.contrib.layers.flatten(poolLayer2)
+        num_output = 10
+        fullyConLayer1 = tf.layers.dense(poolLayer2, hidden_size, activation=tf.nn.sigmoid)
+
+        # fully connected with L2 regularizer
+        l2Regularizer = tf.contrib.layers.l2_regularizer(decay)
+        fullyConLayer2 = tf.layers.dense(fullyConLayer1, hidden_size, activation=tf.nn.sigmoid,
+                                         kernel_regularizer=l2Regularizer)
+        # dropout
+        dropRate = 0.5
+        dropout = tf.layers.dropout(fullyConLayer2, dropRate, training=is_train)
+
+        logits = tf.layers.dense(dropout, num_output)
+        return logits
 
     # Entry point for training and evaluation.
     def train_and_evaluate(self, FLAGS, train_set, test_set):
@@ -144,31 +193,20 @@ class ConvNet(object):
             # ======================================================================
             # Define softmax layer, use the features.
             # ----------------- YOUR CODE HERE ----------------------
-            #
-            # Remove NotImplementedError and assign calculated value to logits after code implementation.
-            logits = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=Y, logits=features)
-            print("logits")
+            logits = features
             # ======================================================================
             # Define loss function, use the logits.
             # ----------------- YOUR CODE HERE ----------------------
-            #
-            # Remove NotImplementedError and assign calculated value to loss after code implementation.
-            loss = tf.reduce_mean(logits)
-            #tf.reduce_mean(-tf.reduce_sum(y*tf.log(pred), reduction_indices=1))
-            print("loss")
+            cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=Y, logits=logits)
+            loss = tf.reduce_mean(cross_entropy)
             # ======================================================================
             # Define training op, use the loss.
             # ----------------- YOUR CODE HERE ----------------------
-            #
-            # Remove NotImplementedError and assign calculated value to train_op after code implementation.
             train_op = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss)
-            print("train_op")
             # ======================================================================
             # Define accuracy op.
             # ----------------- YOUR CODE HERE ----------------------
-            #
-            #accuracy = NotImplementedError
-            correct = tf.nn.in_top_k(features, Y, 1)
+            correct = tf.nn.in_top_k(logits, Y, 1)
             accuracy = tf.reduce_mean(tf.cast(correct, tf.float32))
             # ======================================================================
             # Allocate percentage of GPU memory to the session.
@@ -198,11 +236,12 @@ class ConvNet(object):
                     end_time = time.time()
                     print ('the training took: %d(s)' % (end_time - start_time))
 
-                    total_correct = sess.run(accuracy, feed_dict={X: testX, Y: testY, is_train: False})
-                    print ('accuracy of the trained model %f' % (total_correct / testX.shape[0]))
+                    test_accuracy = accuracy.eval(feed_dict={X: testX, Y: testY, is_train: False})
+                    #test_accuracy = sess.run(accuracy, feed_dict={X: testX, Y: testY, is_train: False})
+                    print ('accuracy of the trained model %f' % test_accuracy)
                     print ()
 
-                return sess.run(accuracy, feed_dict={X: testX, Y: testY, is_train: False}) / testX.shape[0]
+                return accuracy.eval(feed_dict={X: testX, Y: testY, is_train: False})
 
 
 
