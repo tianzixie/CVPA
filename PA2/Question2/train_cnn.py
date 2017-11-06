@@ -49,9 +49,8 @@ class ConvNet(object):
 
         # fully connected
         poolLayer2 = tf.contrib.layers.flatten(poolLayer2)
-        num_output = 10
         fullyConLayer = tf.layers.dense(poolLayer2, hidden_size, activation=tf.nn.sigmoid)
-        logits = tf.layers.dense(fullyConLayer, num_output)
+        logits = tf.layers.dense(fullyConLayer, 10)
         return logits
 
     # Replace sigmoid with ReLU.
@@ -74,9 +73,8 @@ class ConvNet(object):
 
         # fully connected
         poolLayer2 = tf.contrib.layers.flatten(poolLayer2)
-        num_output = 10
         fullyConLayer = tf.layers.dense(poolLayer2, hidden_size, activation=tf.nn.sigmoid)
-        logits = tf.layers.dense(fullyConLayer, num_output)
+        logits = tf.layers.dense(fullyConLayer, 10)
         return logits
 
     # Add one extra fully connected layer.
@@ -99,7 +97,6 @@ class ConvNet(object):
 
         # fully connected
         poolLayer2 = tf.contrib.layers.flatten(poolLayer2)
-        num_output = 10
         fullyConLayer1 = tf.layers.dense(poolLayer2, hidden_size, activation=tf.nn.sigmoid)
 
         # fully connected with L2 regularizer
@@ -107,7 +104,7 @@ class ConvNet(object):
         fullyConLayer2 = tf.layers.dense(fullyConLayer1, hidden_size, activation=tf.nn.sigmoid,
                                          kernel_regularizer=l2Regularizer)
 
-        logits = tf.layers.dense(fullyConLayer2, num_output)
+        logits = tf.layers.dense(fullyConLayer2, 10)
         return logits
 
     # Use Dropout now.
@@ -117,33 +114,30 @@ class ConvNet(object):
         # and  + Dropout.
         #
         # ----------------- YOUR CODE HERE ----------------------
-        
+        dropRate = 0.5
+
         # first conv + pool
         convLayer1 = tf.layers.conv2d(X, filters=20, kernel_size=5, 
                                       padding="VALID", activation=tf.nn.relu)
         poolLayer1 = tf.layers.max_pooling2d(convLayer1, pool_size=2, 
                                              strides=2, padding="VALID")
+        dropout1 = tf.layers.dropout(poolLayer1, dropRate, training=is_train)
 
         # second conv + pool
-        convLayer2 = tf.layers.conv2d(poolLayer1, filters=40, kernel_size=5, 
+        convLayer2 = tf.layers.conv2d(dropout1, filters=40, kernel_size=5, 
                                       padding="VALID", activation=tf.nn.relu)
         poolLayer2 = tf.layers.max_pooling2d(convLayer2, pool_size=2, 
                                              strides=2, padding="VALID")
-
+        dropout2 = tf.layers.dropout(poolLayer2, dropRate, training=is_train)
         # fully connected
-        poolLayer2 = tf.contrib.layers.flatten(poolLayer2)
-        num_output = 10
-        fullyConLayer1 = tf.layers.dense(poolLayer2, hidden_size, activation=tf.nn.sigmoid)
+        dropout2 = tf.contrib.layers.flatten(dropout2)
+        fullyConLayer1 = tf.layers.dense(dropout2, hidden_size, activation=tf.nn.sigmoid)
 
         # fully connected with L2 regularizer
-        l2Regularizer = tf.contrib.layers.l2_regularizer(decay)
-        fullyConLayer2 = tf.layers.dense(fullyConLayer1, hidden_size, activation=tf.nn.sigmoid,
-                                         kernel_regularizer=l2Regularizer)
+        fullyConLayer2 = tf.layers.dense(fullyConLayer1, hidden_size, activation=tf.nn.sigmoid)
         # dropout
-        dropRate = 0.5
-        dropout = tf.layers.dropout(fullyConLayer2, dropRate, training=is_train)
-
-        logits = tf.layers.dense(dropout, num_output)
+        dropout3 = tf.layers.dropout(fullyConLayer2, dropRate, training=is_train)
+        logits = tf.layers.dense(dropout3, 10)
         return logits
 
     # Entry point for training and evaluation.

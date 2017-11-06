@@ -29,11 +29,11 @@ from train_cnn import ConvNet
 # Set parameters for Sparse Autoencoder
 parser = argparse.ArgumentParser('CNN Exercise.')
 parser.add_argument('--learning_rate',
-                    type=float, default=0.1,
+                    type=float, default=0.03,
                     help='Initial learning rate.')
 parser.add_argument('--num_epochs',
                     type=int,
-                    default=60,
+                    default=40,
                     help='Number of epochs to run trainer.')
 parser.add_argument('--decay',
                     type=float,
@@ -60,7 +60,7 @@ parser.add_argument('--visibleSize',
                     help='Used for gradient checking.')
 parser.add_argument('--hiddenSize',
                     type=int,
-                    default='100',
+                    default='1000',
                     help='.')
 
 FLAGS = None
